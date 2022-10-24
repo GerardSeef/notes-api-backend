@@ -1,9 +1,8 @@
-
-// const { request, json, response } = require('express');
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-
 const app = express()
+const Note = require('./models/note')
 const logger = require('./loggerMiddleware')
 
 app.use(cors())
@@ -44,19 +43,15 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
+  Note.find({}).then(notes => {
+    response.json(notes)
+  })
 })
 
 app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  console.log(id)
-  const note = notes.find(note => note.id === id)
-  console.log(note)
-  if (note) {
+  Note.findById(request.params.id).then(note => {
     response.json(note)
-  } else {
-    response.status(404).end()
-  }
+  })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -66,36 +61,29 @@ app.delete('/api/notes/:id', (request, response) => {
 })
 
 app.post('/api/notes', (request, response) => {
-  const note = request.body
+  const body = request.body
 
-  if (!note || !note.content) {
-    return response.status(400).json({
-      error: 'note content is missing'
-    })
+  if (body.content === undefined) {
+    return response.status(400).json({ error: 'content missing' })
   }
+  const note = new Note({
+    content: body.content,
+    important: body.important || false,
+    date: new Date()
+  })
 
-  const ids = notes.map(note => note.id)
-  const maxId = Math.max(...ids)
-
-  const newNote = {
-    id: maxId + 1,
-    content: note.content,
-    important: typeof note.important !== 'undefined' ? note.important : false,
-    date: new Date().toISOString()
-  }
-
-  notes = [...notes, newNote]
-
-  response.status(201).json(newNote)
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
 })
 
 app.use((request, response) => {
   response.status(404).json({
-    error: 'Not found'
+    error: 'unknown endpoint'
   })
 })
 
-const PORT = process.env.PORT || 3002
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

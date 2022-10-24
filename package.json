@@ -7,7 +7,11 @@
     "dev": "nodemon index.js",
     "eslint": "eslint .",
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "rm -rf build && cd /c/Users/CX11/Documents/part2-notes/ && npm run build --prod && cp -r build /c/Users/CX11/Documents/notes-api-backend/notes-api-backend/",
+    "deploy": "git push heroku main",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
+    "logs:prod": "heroku logs --tail"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +22,9 @@
   },
   "dependencies": {
     "cors": "2.8.5",
-    "express": "4.18.2"
+    "dotenv": "16.0.3",
+    "express": "4.18.2",
+    "mongoose": "^6.6.7"
   },
   "eslintConfig": {
     "extends": "./node_modules/standard/eslintrc.json"
